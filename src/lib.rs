@@ -5,15 +5,6 @@
 
 //! CBOR (RFC 7049) encoder and decoder implementations.
 
-extern crate byteorder;
-extern crate libc;
-
-#[cfg(test)]
-extern crate rustc_serialize;
-
-#[cfg(feature="random")]
-extern crate quickcheck;
-
 pub mod types;
 pub mod value;
 pub mod decoder;

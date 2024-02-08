@@ -3,7 +3,7 @@
 // the MPL was not distributed with this file, You
 // can obtain one at http://mozilla.org/MPL/2.0/.
 
-use util::identity;
+use super::util::identity;
 use std::{i8, i16, i32, i64, f32, f64};
 
 #[cfg(feature="random")]

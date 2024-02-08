@@ -10,7 +10,7 @@
 
 use std::collections::{BTreeMap, LinkedList};
 use std::i64;
-use types::Tag;
+use crate::types::Tag;
 
 /// The generic CBOR representation.
 #[derive(Clone, Debug, PartialEq, PartialOrd)]

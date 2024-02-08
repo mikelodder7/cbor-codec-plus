@@ -68,11 +68,11 @@ impl Type {
     pub fn read<R: ReadBytesExt>(r: &mut R) -> Result<(Type, u8), Error> {
         let b = r.read_u8()?;
         match ((b & 0b111_00000) >> 5, b & 0b000_11111) {
-            (0, a @ 0...24)  => Ok((Type::UInt8, a)),
+            (0, a @ 0..=24)  => Ok((Type::UInt8, a)),
             (0, 25)          => Ok((Type::UInt16, 25)),
             (0, 26)          => Ok((Type::UInt32, 26)),
             (0, 27)          => Ok((Type::UInt64, 27)),
-            (1, a @ 0...24)  => Ok((Type::Int8, a)),
+            (1, a @ 0..=24)  => Ok((Type::Int8, a)),
             (1, 25)          => Ok((Type::Int16, 25)),
             (1, 26)          => Ok((Type::Int32, 26)),
             (1, 27)          => Ok((Type::Int64, 27)),
@@ -81,19 +81,19 @@ impl Type {
             (4, a)           => Ok((Type::Array, a)),
             (5, a)           => Ok((Type::Object, a)),
             (6, a)           => Ok((Type::Tagged, a)),
-            (7, a @ 0...19)  => Ok((Type::Unassigned { major: 7, info: a }, a)),
+            (7, a @ 0..=19)  => Ok((Type::Unassigned { major: 7, info: a }, a)),
             (7, 20)          => Ok((Type::Bool, 20)),
             (7, 21)          => Ok((Type::Bool, 21)),
             (7, 22)          => Ok((Type::Null, 22)),
             (7, 23)          => Ok((Type::Undefined, 23)),
             (7, 24)          => match r.read_u8()? {
-                a @ 0...31 => Ok((Type::Reserved { major: 7, info: a }, a)),
+                a @ 0..=31 => Ok((Type::Reserved { major: 7, info: a }, a)),
                 a          => Ok((Type::Unassigned { major: 7, info: a }, a))
             },
             (7, 25)          => Ok((Type::Float16, 25)),
             (7, 26)          => Ok((Type::Float32, 26)),
             (7, 27)          => Ok((Type::Float64, 27)),
-            (7, a @ 28...30) => Ok((Type::Unassigned { major: 7, info: a }, a)),
+            (7, a @ 28..=30) => Ok((Type::Unassigned { major: 7, info: a }, a)),
             (7, 31)          => Ok((Type::Break, 31)),
             (m, a)           => Ok((Type::Unknown { major: m, info: a }, a))
         }

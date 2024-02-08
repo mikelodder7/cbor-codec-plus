@@ -10,7 +10,7 @@ use json::{Json, Decoder, FromJson, DecodeResult};
 use json::decoder::ReadIter;
 use std::{f32, f64, i8, i16, i32, i64, u64};
 use std::fs::File;
-use util;
+use super::util;
 
 #[derive(Debug, Clone)]
 struct TestVector {
@@ -23,7 +23,7 @@ struct TestVector {
 
 impl FromJson for TestVector {
     fn decode<I: Iterator<Item=char>>(d: &mut Decoder<I>) -> DecodeResult<TestVector> {
-        object! {
+        json::object! {
             let decoder = d;
             TestVector {
                 cbor:       req. "cbor"       => d.string(),

@@ -56,7 +56,7 @@ impl Error for ReadSliceError {
         "ReadSliceError"
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             ReadSliceError::IoError(ref e) => Some(e),
             _                              => None

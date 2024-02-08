@@ -87,7 +87,7 @@
 //! ```
 
 use byteorder::{BigEndian, ReadBytesExt};
-use slice::{ReadSlice, ReadSliceError};
+use crate::slice::{ReadSlice, ReadSliceError};
 use std::collections::{BTreeMap, LinkedList};
 use std::str::{from_utf8, Utf8Error};
 use std::error::Error;
@@ -96,9 +96,9 @@ use std::fmt;
 use std::{i8, i16, i32, i64};
 use std::io;
 use std::string;
-use skip::Skip;
-use types::{Tag, Type};
-use value::{self, Int, Bytes, Key, Simple, Text, Value};
+use crate::skip::Skip;
+use crate::types::{Tag, Type};
+use crate::value::{self, Int, Bytes, Key, Simple, Text, Value};
 
 // Decoder Configuration ////////////////////////////////////////////////////
 
@@ -181,7 +181,7 @@ pub enum DecodeError {
     /// decoding an indefinite object.
     UnexpectedBreak,
     /// Some other error.
-    Other(Box<Error + Send + Sync>)
+    Other(Box<dyn Error + Send + Sync>)
 }
 
 /// When decoding an optional item, i.e. a `Null` value has to be
@@ -271,7 +271,7 @@ impl Error for DecodeError {
         }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             DecodeError::IoError(ref e)     => Some(e),
             DecodeError::InvalidUtf8(ref e) => Some(e),
@@ -398,7 +398,7 @@ impl<R: ReadBytesExt> Kernel<R> {
 
     pub fn u8(&mut self, ti: &TypeInfo) -> DecodeResult<u8> {
         match *ti {
-            (Type::UInt8, n @ 0...23) => Ok(n),
+            (Type::UInt8, n @ 0..=23) => Ok(n),
             (Type::UInt8, 24) => self.reader.read_u8().map_err(From::from),
             _                 => unexpected_type(ti)
         }
@@ -406,7 +406,7 @@ impl<R: ReadBytesExt> Kernel<R> {
 
     pub fn u16(&mut self, ti: &TypeInfo) -> DecodeResult<u16> {
         match *ti {
-            (Type::UInt8, n @ 0...23) => Ok(n as u16),
+            (Type::UInt8, n @ 0..=23) => Ok(n as u16),
             (Type::UInt8, 24)  => self.reader.read_u8().map(|n| n as u16).map_err(From::from),
             (Type::UInt16, 25) => self.reader.read_u16::<BigEndian>().map_err(From::from),
             _                  => unexpected_type(ti)
@@ -415,7 +415,7 @@ impl<R: ReadBytesExt> Kernel<R> {
 
     pub fn u32(&mut self, ti: &TypeInfo) -> DecodeResult<u32> {
         match *ti {
-            (Type::UInt8, n @ 0...23) => Ok(n as u32),
+            (Type::UInt8, n @ 0..=23) => Ok(n as u32),
             (Type::UInt8, 24)  => self.reader.read_u8().map(|n| n as u32).map_err(From::from),
             (Type::UInt16, 25) => self.reader.read_u16::<BigEndian>().map(|n| n as u32).map_err(From::from),
             (Type::UInt32, 26) => self.reader.read_u32::<BigEndian>().map_err(From::from),
@@ -425,7 +425,7 @@ impl<R: ReadBytesExt> Kernel<R> {
 
     pub fn u64(&mut self, ti: &TypeInfo) -> DecodeResult<u64> {
         match *ti {
-            (Type::UInt8, n @ 0...23) => Ok(n as u64),
+            (Type::UInt8, n @ 0..=23) => Ok(n as u64),
             (Type::UInt8, 24)  => self.reader.read_u8().map(|n| n as u64).map_err(From::from),
             (Type::UInt16, 25) => self.reader.read_u16::<BigEndian>().map(|n| n as u64).map_err(From::from),
             (Type::UInt32, 26) => self.reader.read_u32::<BigEndian>().map(|n| n as u64).map_err(From::from),
@@ -436,7 +436,7 @@ impl<R: ReadBytesExt> Kernel<R> {
 
     pub fn i8(&mut self, ti: &TypeInfo) -> DecodeResult<i8> {
         match *ti {
-            (Type::Int8, n @ 0...23) => Ok(-1 - n as i8),
+            (Type::Int8, n @ 0..=23) => Ok(-1 - n as i8),
             (Type::Int8, 24)         => read_signed_byte!(self, u8, i8, i8),
             (Type::UInt8, _)         => cast_unsigned!(self, u8, ti, u8, i8, i8),
             _                        => unexpected_type(ti)
@@ -445,7 +445,7 @@ impl<R: ReadBytesExt> Kernel<R> {
 
     pub fn i16(&mut self, ti: &TypeInfo) -> DecodeResult<i16> {
         match *ti {
-            (Type::Int8, n @ 0...23) => Ok(-1 - n as i16),
+            (Type::Int8, n @ 0..=23) => Ok(-1 - n as i16),
             (Type::Int8, 24)         => read_signed_byte!(self, u8, i16, i16),
             (Type::Int16, 25)        => read_signed!(self, read_u16, u16, i16, i16),
             (Type::UInt8, _)         => cast_unsigned!(self, u8, ti, u8, i16, i16),
@@ -456,7 +456,7 @@ impl<R: ReadBytesExt> Kernel<R> {
 
     pub fn i32(&mut self, ti: &TypeInfo) -> DecodeResult<i32> {
         match *ti {
-            (Type::Int8, n @ 0...23) => Ok(-1 - n as i32),
+            (Type::Int8, n @ 0..=23) => Ok(-1 - n as i32),
             (Type::Int8, 24)         => read_signed_byte!(self, u8, i32, i32),
             (Type::Int16, 25)        => read_signed!(self, read_u16, u16, i32, i32),
             (Type::Int32, 26)        => read_signed!(self, read_u32, u32, i32, i32),
@@ -469,7 +469,7 @@ impl<R: ReadBytesExt> Kernel<R> {
 
     pub fn i64(&mut self, ti: &TypeInfo) -> DecodeResult<i64> {
         match *ti {
-            (Type::Int8, n @ 0...23) => Ok(-1 - n as i64),
+            (Type::Int8, n @ 0..=23) => Ok(-1 - n as i64),
             (Type::Int8, 24)         => read_signed_byte!(self, u8, i64, i64),
             (Type::Int16, 25)        => read_signed!(self, read_u16, u16, i64, i64),
             (Type::Int32, 26)        => read_signed!(self, read_u32, u32, i64, i64),
@@ -536,7 +536,7 @@ impl<R: ReadBytesExt> Kernel<R> {
     /// unsigned value following the rules of major type 0.
     pub fn unsigned(&mut self, first: u8) -> DecodeResult<u64> {
         match first {
-            n @ 0...23 => Ok(n as u64),
+            n @ 0..=23 => Ok(n as u64),
             24 => self.reader.read_u8().map(|n| n as u64).map_err(From::from),
             25 => self.reader.read_u16::<BigEndian>().map(|n| n as u64).map_err(From::from),
             26 => self.reader.read_u32::<BigEndian>().map(|n| n as u64).map_err(From::from),
@@ -611,7 +611,7 @@ impl<R: ReadBytesExt + ReadSlice> Kernel<R> {
 
 // Workaround to not require the currently unstable `f32::ldexp`:
 mod ffi {
-    use libc::c_int;
+    use std::os::raw::c_int;
 
     extern {
         pub fn ldexpf(x: f32, exp: c_int) -> f32;
@@ -1275,8 +1275,8 @@ mod tests {
     use std::collections::BTreeMap;
     use std::io::Cursor;
     use super::*;
-    use types::Tag;
-    use value::{self, Int, Key, Simple, Value};
+    use crate::types::Tag;
+    use crate::value::{self, Int, Key, Simple, Value};
 
     #[test]
     fn unsigned() {
